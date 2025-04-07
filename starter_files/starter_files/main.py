@@ -1,6 +1,7 @@
 import pygame
 import constants
 from character import Character
+from weapon import Weapon
 
 pygame.init()
 
@@ -16,22 +17,39 @@ def _scale(image, scale):
     h = image.get_height()
     return pygame.transform.scale(image, (w * scale, h * scale))
 
+# Load weapon images
+bow_image = _scale(pygame.image.load(f'starter_files/starter_files/assets/images/weapons/bow.png').convert_alpha(), constants.WEAPON_SCALE)
+arrow_image = _scale(pygame.image.load(f'starter_files/starter_files/assets/images/weapons/arrow.png').convert_alpha(), constants.WEAPON_SCALE)
 
-animation_list = []
-for i in range(4):
-    img = pygame.image.load(f'starter_files/starter_files/assets/images/characters/elf/idle/{i}.png').convert_alpha()
-    img = _scale(img, constants.SCALE)
-    animation_list.append(img)
+# Load character images
+mob_animations = []
+mob_type = ["elf", "big_demon", "goblin", "imp", "muddy", "skeleton", "tiny_zombie"]
+animation_type = ["idle", "run"]
 
+for mob in mob_type:
+    animation_list = []
+    for animation in animation_type:
+        temp_list = []
+        for i in range(4):
+            img = pygame.image.load(f'starter_files/starter_files/assets/images/characters/{mob}/{animation}/{i}.png').convert_alpha()
+            img = _scale(img, constants.SCALE)
+            temp_list.append(img)
+        animation_list.append(temp_list)
+    mob_animations.append(animation_list)
+
+#Weapon
+bow = Weapon(bow_image, arrow_image)
+arrow_group = pygame.sprite.Group()
 #Character
-player = Character(100, 100, animation_list)
+player = Character(100, 100, mob_animations, 0)
 
 moving_left = False
 moving_right = False
 moving_up = False
 moving_down = False
-run = True
 
+# Game loop
+run = True
 while run:
     #Control frame rate
     clock.tick(constants.FPS)
@@ -51,11 +69,28 @@ while run:
         dy = -constants.SPEED
     if moving_down:
         dy = constants.SPEED
-        
+    
+    # Move player
     player.move(dx, dy)
-    player._update()
+
+    #Update player
+    player.update()
+    arrow = bow.update(player)
+    if arrow:
+        print("arrow created")
+        arrow_group.add(arrow)
+
+    for arrow in arrow_group:
+        print("arrow updated")
+        arrow.update()
+
     #draw main char
-    player.draw(screen, dx)
+    player.draw(screen)
+    bow.draw(screen)
+    
+    for arrow in arrow_group:
+        print('Drawing arrow')
+        arrow.draw(screen)
 
     # Event handler
     for event in pygame.event.get():
@@ -63,25 +98,25 @@ while run:
             run = False
 
         if event.type == pygame.KEYDOWN:
-            print(f"Key pressed: {event.key}")
             if event.key in (pygame.K_a, pygame.K_LEFT):
                 moving_left = True
-            if event.key == pygame.K_d:
+            if event.key in (pygame.K_d, pygame.K_RIGHT):
                 moving_right = True
-            if event.key == pygame.K_w:
+            if event.key in (pygame.K_w, pygame.K_UP):
                 moving_up = True
-            if event.key == pygame.K_s:
+            if event.key in (pygame.K_s, pygame.K_DOWN):
                 moving_down = True
 
         if event.type == pygame.KEYUP:
             if event.key in (pygame.K_a, pygame.K_LEFT):
                 moving_left = False
-            if event.key == pygame.K_d:
+            if event.key in (pygame.K_d, pygame.K_RIGHT):
                 moving_right = False
-            if event.key == pygame.K_w:
+            if event.key in (pygame.K_w, pygame.K_UP):
                 moving_up = False
-            if event.key == pygame.K_s:
+            if event.key in (pygame.K_s, pygame.K_DOWN):
                 moving_down = False
 
     pygame.display.update()
+
 pygame.quit()

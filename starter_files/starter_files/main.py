@@ -84,12 +84,12 @@ while run:
         print("arrow updated")
         arrow.update()
 
+    print(arrow)
     #draw main char
     player.draw(screen)
     bow.draw(screen)
     
     for arrow in arrow_group:
-        print('Drawing arrow')
         arrow.draw(screen)
 
     # Event handler

@@ -36,7 +36,7 @@ class Weapon():
     def draw(self, surface):
         self.image = pygame.transform.rotate(self.original_image, self.angle)
         surface.blit(self.image, ((self.rect.centerx - self.image.get_width()/2), (self.rect.centery - self.image.get_height()/2)))
-
+        
 
 class Arrow(pygame.sprite.Sprite):
     def __init__(self, image, x, y, angle):
@@ -55,10 +55,10 @@ class Arrow(pygame.sprite.Sprite):
         #reposition based on speed
         self.rect.x += self.dx
         self.rect.y += self.dy
-
         # Check if arrow is off_screen
-        if self.rect.right < 0 or self.rect.left > constants.SCREEN_WIDTH or self.rect.top < constants.SCREEN_HEIGHT or self.rect.bottom < 0:
+        if self.rect.right < 0 or self.rect.left > constants.SCREEN_WIDTH or self.rect.top > constants.SCREEN_HEIGHT or self.rect.bottom < 0:
             self.kill()
     
     def draw(self, surface):
         surface.blit(self.image, ((self.rect.centerx - self.image.get_width()/2), (self.rect.centery - self.image.get_height()/2)))
+        print(f"Arrow drawn at: ({self.rect.centerx - self.image.get_width()/2}, {self.rect.centery - self.image.get_height()/2})")

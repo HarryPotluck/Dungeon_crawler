@@ -70,4 +70,4 @@ class Character():
         else:
             surface.blit(flipped_image, self.rect, )
 
-        #pygame.draw.rect(surface, constants.RED, self.rect, 1)
+        pygame.draw.rect(surface, constants.RED, self.rect, 1)

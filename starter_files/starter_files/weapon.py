@@ -61,4 +61,3 @@ class Arrow(pygame.sprite.Sprite):
     
     def draw(self, surface):
         surface.blit(self.image, ((self.rect.centerx - self.image.get_width()/2), (self.rect.centery - self.image.get_height()/2)))
-        print(f"Arrow drawn at: ({self.rect.centerx - self.image.get_width()/2}, {self.rect.centery - self.image.get_height()/2})")

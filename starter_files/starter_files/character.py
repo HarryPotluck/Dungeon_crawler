@@ -10,8 +10,9 @@ class Character():
         self.update_time = pygame.time.get_ticks()
         self.char_type = char_type
         self.animation_list = mob_animations[char_type]
-        self.image = self.animation_list[self.action][self.frame_index]
         self.running = False
+        
+        self.image = self.animation_list[self.action][self.frame_index]
         self.rect = pygame.Rect(0, 0, 40, 40)
         self.rect.center = (x, y)
 

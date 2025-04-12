@@ -3,7 +3,7 @@ import constants
 import math
 
 class Character():
-    def __init__(self, x, y, mob_animations, char_type: int ):
+    def __init__(self, x, y, health: int, mob_animations, char_type: int ):
         self.flip = False
         self.frame_index = 0
         self.action = 0   # 0:idle, 1:run
@@ -11,7 +11,9 @@ class Character():
         self.char_type = char_type
         self.animation_list = mob_animations[char_type]
         self.running = False
-        
+        self.health = health
+        self.alive = True
+
         self.image = self.animation_list[self.action][self.frame_index]
         self.rect = pygame.Rect(0, 0, 40, 40)
         self.rect.center = (x, y)
@@ -38,7 +40,11 @@ class Character():
     
 
     def update(self):
-        # Check current action
+        # Check alive
+        if self.health <= 0:
+            self.health = 0
+            self.alive = False
+        # Check current health
         if self.running == True:
             self.update_action(1)
         else:

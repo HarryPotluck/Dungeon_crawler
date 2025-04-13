@@ -12,6 +12,7 @@ class Character():
         self.animation_list = mob_animations[char_type]
         self.running = False
         self.health = health
+        self.score = 0
         self.alive = True
 
         self.image = self.animation_list[self.action][self.frame_index]
@@ -75,6 +76,6 @@ class Character():
         if self.char_type == 0:
             surface.blit(flipped_image, (self.rect.x, self.rect.y - constants.OFFSET * constants.SCALE))
         else:
-            surface.blit(flipped_image, self.rect, )
+            surface.blit(flipped_image, self.rect)
 
         pygame.draw.rect(surface, constants.RED, self.rect, 1)

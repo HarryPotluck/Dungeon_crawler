@@ -12,7 +12,11 @@ class Item(pygame.sprite.Sprite):
 
         self.update_time = pygame.time.get_ticks()
 
-    def update(self, player):
+    def update(self, screen_scroll, player):
+        # Reposition
+        self.rect.x += screen_scroll[0]
+        self.rect.y += screen_scroll[1]
+        
         #Handling collision
         if self.rect.colliderect(player.rect):
             # Coin

@@ -21,8 +21,11 @@ class Character():
 
 
     def move(self, dx, dy):
-        # Running check
+        
+        screen_scroll = [0, 0]
         self.running = False
+
+        # Run check
         if dx != 0 or dy != 0:
             self.running = True
 
@@ -39,6 +42,27 @@ class Character():
         self.rect.x += dx
         self.rect.y += dy
     
+        # only applied to player
+        if self.char_type == 0:
+
+            # Scroll screen
+            if self.rect.right > (constants.SCREEN_WIDTH - constants.SCROLL_THRESH):
+                screen_scroll[0] = (constants.SCREEN_WIDTH - constants.SCROLL_THRESH) - self.rect.right
+                self.rect.right = (constants.SCREEN_WIDTH - constants.SCROLL_THRESH)
+            if self.rect.left  < constants.SCROLL_THRESH:
+                screen_scroll[0] = constants.SCROLL_THRESH - self.rect.left
+                self.rect.left = constants.SCROLL_THRESH
+            if self.rect.top < constants.SCROLL_THRESH:
+                screen_scroll[1] = constants.SCROLL_THRESH - self.rect.top
+                self.rect.top = constants.SCROLL_THRESH
+            if self.rect.bottom > (constants.SCREEN_HEIGHT - constants.SCROLL_THRESH):
+                screen_scroll[1] = (constants.SCREEN_HEIGHT - constants.SCROLL_THRESH) - self.rect.bottom
+                self.rect.bottom = constants.SCREEN_HEIGHT - constants.SCROLL_THRESH
+            return screen_scroll
+        
+    def ai(self, screen_scroll):
+        self.rect.x += screen_scroll[0]
+        self.rect.y += screen_scroll[1]
 
     def update(self):
         # Check alive

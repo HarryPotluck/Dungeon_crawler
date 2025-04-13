@@ -15,6 +15,10 @@ font = pygame.font.Font("starter_files\starter_files/assets/fonts/AtariClassic.t
 #create clock for frame rate
 clock = pygame.time.Clock()
 
+#define game variables
+level = 1
+screen_scroll = []
+
 #helper function to scale
 def scale(image, scale):
     w = image.get_width()
@@ -90,7 +94,11 @@ class DamageText(pygame.sprite.Sprite):
 
         self.counter = 0
 
-    def update(self):
+    def update(self, screen_scroll):
+        # Reposition
+        self.rect.x += screen_scroll[0]
+        self.rect.y += screen_scroll[1]
+
         self.rect.y -= 1
         self.counter += 1
         if self.counter > 30:
@@ -100,7 +108,7 @@ class DamageText(pygame.sprite.Sprite):
 bow = Weapon(bow_image, arrow_image)
 
 #Character
-player = Character(100, 100, 80, mob_animations, 0)
+player = Character(400, 300, 80, mob_animations, 0)
 
 #Enemy
 enemy = Character(500, 300, 200, mob_animations, 1)
@@ -136,16 +144,7 @@ for i in range(1, 5):
         map_level.append(map_data)
 
 world = World()
-world.update(map_level, tile_list, 1)
-
-
-#Draw grid
-def draw_grid():
-    for i in range(30):
-        pygame.draw.line(screen, constants.WHITE, (0, i * constants.TILE_SIZE), (constants.SCREEN_WIDTH, i * constants.TILE_SIZE))
-        pygame.draw.line(screen, constants.WHITE, (i * constants.TILE_SIZE, 0), (i * constants.TILE_SIZE, constants.SCREEN_HEIGHT))
-
-
+world.process_data(map_level, tile_list, 1)
 
 # Game loop
 run = True
@@ -170,22 +169,24 @@ while run:
         dy = constants.SPEED
     
     # Move player
-    player.move(dx, dy)
-
-    #Update player
+    screen_scroll = player.move(dx, dy)
+    
+    #Update all
+    world.update(screen_scroll)
     player.update()
     for enemy in enemy_list:
+        enemy.ai(screen_scroll)
         enemy.update()
     arrow = bow.update(player)
     if arrow:
         arrow_group.add(arrow)
     for arrow in arrow_group:
-        damage, damage_pos = arrow.update(enemy_list)
+        damage, damage_pos = arrow.update(screen_scroll, enemy_list)
         if damage:
             damage_text = DamageText(damage_pos.centerx, damage_pos.y, damage, constants.RED)
             damage_text_group.add(damage_text)
-    damage_text_group.update()
-    item_group.update(player)
+    damage_text_group.update(screen_scroll)
+    item_group.update(screen_scroll, player)
 
     #draw player
     world.draw(screen)
@@ -200,7 +201,7 @@ while run:
     item_group.draw(screen)
 
     draw_info()
-    draw_grid()
+
     # Event handler
     for event in pygame.event.get():
         if event.type == pygame.QUIT:

@@ -51,7 +51,11 @@ class Arrow(pygame.sprite.Sprite):
         self.dx = math.cos(math.radians(self.angle)) * constants.ARROW_SPEED
         self.dy = -(math.sin(math.radians(self.angle)) * constants.ARROW_SPEED)  # pygame y coor increases down
     
-    def update(self, enemy_list):
+    def update(self, screen_scroll, enemy_list):
+        # Reposition
+        self.rect.x += screen_scroll[0]
+        self.rect.y += screen_scroll[1]
+        
         # Initialize Damage
         damage = 0
         damage_pos = None

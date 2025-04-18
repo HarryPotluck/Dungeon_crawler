@@ -1,10 +1,18 @@
+from character import Character
+from items import Item
 import constants
+
 
 class World():
     def __init__(self):
         self.map_tiles = []
+        self.obstacle_tiles = []
+        self.level_tile = None
+        self.item_list = []
+        self.player = None
+        self.enemy = []
 
-    def process_data(self, data, tile_list, level: int):
+    def process_data(self, data, tile_list, level: int, item_images, mob_animations):
         for y, row in enumerate(data[level-1]):
             for x, tile in enumerate(row):
                 tile = int(tile)
@@ -15,6 +23,30 @@ class World():
                 image_rect.center = (image_x, image_y)
                 tile_data = [image, image_rect, image_x, image_y]
 
+                if tile == 7:
+                    self.obstacle_tiles.append(tile_data)
+                if tile == 8:
+                    self.level_tile = tile_data
+                if tile == 9:
+                    coin = Item(image_x, image_y, 0, item_images[0])
+                    self.item_list.append(coin)
+                    tile_data[0] = tile_list[0]
+                if tile == 10:
+                    red_potion = Item(image_x, image_y, 1, item_images[1])
+                    self.item_list.append(red_potion)
+                    tile_data[0] = tile_list[0]
+                if tile == 11:
+                    player = Character(image_x, image_y, 100, mob_animations, 0) 
+                    self.player = player
+                    tile_data[0] = tile_list[0]
+                if tile >= 12 and tile <= 16:
+                    enemy = Character(image_x, image_y, 90, mob_animations, tile - 11)
+                    tile_data[0] = tile_list[0]
+                    self.enemy.append(enemy)
+                if tile == 17:
+                    enemy = Character(image_x, image_y, 300, mob_animations, tile - 11, True)
+                    tile_data[0] = tile_list[0]
+                    self.enemy.append(enemy)
                 if tile >= 0:
                     self.map_tiles.append(tile_data)
 

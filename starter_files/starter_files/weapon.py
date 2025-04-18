@@ -38,7 +38,6 @@ class Weapon():
         self.image = pygame.transform.rotate(self.original_image, self.angle)
         surface.blit(self.image, ((self.rect.centerx - self.image.get_width()/2), (self.rect.centery - self.image.get_height()/2)))
         
-
 class Arrow(pygame.sprite.Sprite):
     def __init__(self, image, x, y, angle):
         super().__init__()

@@ -3,9 +3,10 @@ import csv
 import constants
 from character import Character
 from weapon import Weapon
-from items import Item
 from world import World
 
+
+# Initialize game
 pygame.init()
 
 screen = pygame.display.set_mode((constants.SCREEN_WIDTH, constants.SCREEN_HEIGHT))
@@ -16,7 +17,7 @@ font = pygame.font.Font("starter_files\starter_files/assets/fonts/AtariClassic.t
 clock = pygame.time.Clock()
 
 #define game variables
-level = 1
+level = 2
 screen_scroll = []
 
 #helper function to scale
@@ -35,13 +36,17 @@ for i in range(4):
     coin_list.append(img)
 #Load potion
 red_potion = scale(pygame.image.load(f'starter_files\starter_files/assets\images\items\potion_red.png').convert_alpha(), 2)
+# Load items
+item_list = []
+item_list.append(coin_list)
+item_list.append([red_potion])
 # Load hearts
 heart_empty = scale(pygame.image.load(f'starter_files/starter_files/assets/images/items/heart_empty.png').convert_alpha(), constants.ITEM_SCALE)
 heart_half = scale(pygame.image.load(f'starter_files/starter_files/assets/images/items/heart_half.png').convert_alpha(), constants.ITEM_SCALE)
 heart_full = scale(pygame.image.load(f'starter_files/starter_files/assets/images/items/heart_full.png').convert_alpha(), constants.ITEM_SCALE)
 # Load character images
 mob_animations = []
-mob_type = ["elf", "big_demon", "goblin", "imp", "muddy", "skeleton", "tiny_zombie"]
+mob_type = ["elf", "tiny_zombie", "skeleton", "goblin", "muddy", "imp", "big_demon"]   # elf == player
 animation_type = ["idle", "run"]
 
 for mob in mob_type:
@@ -61,6 +66,7 @@ for i in range(constants.TILE_TYPE):
     img = pygame.image.load(f'starter_files\starter_files/assets/images/tiles/{i}.png').convert_alpha()
     tile_img = pygame.transform.scale(img, (constants.TILE_SIZE, constants.TILE_SIZE))
     tile_list.append(tile_img)
+
 # Display player hearts
 def draw_info():
     pygame.draw.rect(screen, constants.PANEL, (0, 0, constants.SCREEN_WIDTH, 50))
@@ -76,14 +82,13 @@ def draw_info():
         else:
             screen.blit(heart_empty, (10 + heart_full.get_width() * i, 0))
 
+    draw_text(font, constants.WHITE, constants.SCREEN_WIDTH / 2, 15, "LEVEL: "+ str(level))
     draw_text(font, constants.RED, constants.SCREEN_WIDTH - 200, 15 , f"Score: {player.score}")      
-
 # Display text func
 def draw_text(font, color, x, y, msg):
     img = font.render(msg, True, color)
     screen.blit(img, (x, y))
     return img.get_width()
-
 # Create damage text
 class DamageText(pygame.sprite.Sprite):
     def __init__(self, x, y, damage, color, ):
@@ -107,35 +112,10 @@ class DamageText(pygame.sprite.Sprite):
 #Weapon
 bow = Weapon(bow_image, arrow_image)
 
-#Character
-player = Character(400, 300, 80, mob_animations, 0)
-
 #Enemy
-enemy = Character(500, 300, 200, mob_animations, 1)
-enemy_list = []
-enemy_list.append(enemy)
+#enemy_list = world.enemy
 
-#Items
-potion = Item(150, 200, 1, [red_potion])
-coin = Item(400, 500, 0, coin_list)
-
-
-# Sprite groups
-arrow_group = pygame.sprite.Group()
-damage_text_group = pygame.sprite.Group()
-item_group = pygame.sprite.Group()
-item_group.add(potion)
-item_group.add(coin)
-
-#Movement boolean
-moving_left = False
-moving_right = False
-moving_up = False
-moving_down = False
-
-
-
-# Load data
+# Load world
 
 map_level = []
 for i in range(1, 5):
@@ -144,7 +124,24 @@ for i in range(1, 5):
         map_level.append(map_data)
 
 world = World()
-world.process_data(map_level, tile_list, 1)
+world.process_data(map_level, tile_list, level, item_list, mob_animations)
+
+# Sprite groups
+arrow_group = pygame.sprite.Group()
+damage_text_group = pygame.sprite.Group()
+item_group = pygame.sprite.Group()
+for item in world.item_list:
+    item_group.add(item)
+
+#Character
+player = world.player
+
+#Movement boolean
+moving_left = False
+moving_right = False
+moving_up = False
+moving_down = False
+
 
 # Game loop
 run = True
@@ -169,19 +166,19 @@ while run:
         dy = constants.SPEED
     
     # Move player
-    screen_scroll = player.move(dx, dy)
+    screen_scroll = player.move(dx, dy, world.obstacle_tiles)
     
     #Update all
     world.update(screen_scroll)
     player.update()
-    for enemy in enemy_list:
+    for enemy in world.enemy:
         enemy.ai(screen_scroll)
         enemy.update()
     arrow = bow.update(player)
     if arrow:
         arrow_group.add(arrow)
     for arrow in arrow_group:
-        damage, damage_pos = arrow.update(screen_scroll, enemy_list)
+        damage, damage_pos = arrow.update(screen_scroll, world.enemy)
         if damage:
             damage_text = DamageText(damage_pos.centerx, damage_pos.y, damage, constants.RED)
             damage_text_group.add(damage_text)
@@ -191,7 +188,7 @@ while run:
     #draw player
     world.draw(screen)
     player.draw(screen)
-    for enemy in enemy_list:
+    for enemy in world.enemy:
         enemy.draw(screen)
     bow.draw(screen)
     

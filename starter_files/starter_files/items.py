@@ -3,7 +3,7 @@ import pygame
 class Item(pygame.sprite.Sprite):
     def __init__(self, x, y, item_type, animation_list,):
         super().__init__()
-        self.item_type = item_type #0:coin 1: potion
+        self.item_type = item_type #0:coin, 1: potion
         self.animation_list = animation_list
         self.frame_index = 0
         self.image = self.animation_list[self.frame_index]
@@ -27,7 +27,7 @@ class Item(pygame.sprite.Sprite):
                 player.health += 10
                 if player.health > 100:
                     player.health = 100
-                    score += 2
+                    player.score += 2
             self.kill()
 
 

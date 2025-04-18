@@ -3,7 +3,7 @@ import constants
 import math
 
 class Character():
-    def __init__(self, x, y, health: int, mob_animations, char_type: int ):
+    def __init__(self, x, y, health: int, mob_animations, char_type: int, is_boss=False):
         self.flip = False
         self.frame_index = 0
         self.action = 0   # 0:idle, 1:run
@@ -16,11 +16,14 @@ class Character():
         self.alive = True
 
         self.image = self.animation_list[self.action][self.frame_index]
-        self.rect = pygame.Rect(0, 0, 40, 40)
+        if is_boss:
+            self.rect = pygame.Rect(0, 0, 40 * constants.BOSS_SCALE, 40 * constants.BOSS_SCALE)
+        else:
+            self.rect = pygame.Rect(0, 0, 40, 40)
         self.rect.center = (x, y)
 
 
-    def move(self, dx, dy):
+    def move(self, dx, dy, obstacle_tiles):
         
         screen_scroll = [0, 0]
         self.running = False
@@ -39,8 +42,23 @@ class Character():
             dx = dx * (math.sqrt(2) / 2)
             dy = dy * (math.sqrt(2) / 2)
 
+        # Check for horizontal collision 
         self.rect.x += dx
+        for obstacle in obstacle_tiles:
+            if obstacle[1].colliderect(self.rect):
+                if dx > 0:
+                    self.rect.right = obstacle[1].left
+                else:
+                    self.rect.left = obstacle[1].right
+        # Check for vertical collision
         self.rect.y += dy
+        for obstacle in obstacle_tiles:
+            if obstacle[1].colliderect(self.rect):
+                if dy > 0:
+                    self.rect.bottom = obstacle[1].top
+                else:
+                    self.rect.top = obstacle[1].bottom
+            
     
         # only applied to player
         if self.char_type == 0:

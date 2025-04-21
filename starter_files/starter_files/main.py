@@ -1,8 +1,7 @@
 import pygame
 import csv
 import constants
-from character import Character
-from weapon import Weapon
+from weapon import Weapon, Fireball
 from world import World
 
 
@@ -17,7 +16,7 @@ font = pygame.font.Font("starter_files\starter_files/assets/fonts/AtariClassic.t
 clock = pygame.time.Clock()
 
 #define game variables
-level = 2
+level = 3
 screen_scroll = []
 
 #helper function to scale
@@ -29,6 +28,7 @@ def scale(image, scale):
 # Load weapon images
 bow_image = scale(pygame.image.load(f'starter_files/starter_files/assets/images/weapons/bow.png').convert_alpha(), constants.WEAPON_SCALE)
 arrow_image = scale(pygame.image.load(f'starter_files/starter_files/assets/images/weapons/arrow.png').convert_alpha(), constants.WEAPON_SCALE)
+fireball_image = scale(pygame.image.load(f'starter_files/starter_files/assets/images/weapons/fireball.png').convert_alpha(), constants.WEAPON_SCALE)
 #Load coins
 coin_list = []
 for i in range(4):
@@ -112,11 +112,7 @@ class DamageText(pygame.sprite.Sprite):
 #Weapon
 bow = Weapon(bow_image, arrow_image)
 
-#Enemy
-#enemy_list = world.enemy
-
 # Load world
-
 map_level = []
 for i in range(1, 5):
     with open(f'starter_files\starter_files\levels\level{i}_data.csv', newline='') as csvfile:
@@ -132,6 +128,7 @@ damage_text_group = pygame.sprite.Group()
 item_group = pygame.sprite.Group()
 for item in world.item_list:
     item_group.add(item)
+fireball_group = pygame.sprite.Group()
 
 #Character
 player = world.player
@@ -172,20 +169,26 @@ while run:
     world.update(screen_scroll)
     player.update()
     for enemy in world.enemy:
-        enemy.ai(screen_scroll)
-        enemy.update()
+        fireball = enemy.ai(player, world.obstacle_tiles, screen_scroll, fireball_image)
+        if enemy.alive:
+            enemy.update()
     arrow = bow.update(player)
     if arrow:
         arrow_group.add(arrow)
     for arrow in arrow_group:
-        damage, damage_pos = arrow.update(screen_scroll, world.enemy)
+        damage, damage_pos = arrow.update(screen_scroll, world.enemy, world.obstacle_tiles)
         if damage:
             damage_text = DamageText(damage_pos.centerx, damage_pos.y, damage, constants.RED)
             damage_text_group.add(damage_text)
     damage_text_group.update(screen_scroll)
+    
+    if fireball:
+        fireball_group.add(fireball)
+    for fireball in fireball_group:
+        fireball.update(screen_scroll, player)
     item_group.update(screen_scroll, player)
 
-    #draw player
+    #draw all
     world.draw(screen)
     player.draw(screen)
     for enemy in world.enemy:
@@ -196,6 +199,9 @@ while run:
         arrow.draw(screen)
     damage_text_group.draw(screen) #This is a Group object, which has built-in draw method without having to be defined.
     item_group.draw(screen)
+
+    for fireball in fireball_group:
+        fireball.draw(screen)
 
     draw_info()
 

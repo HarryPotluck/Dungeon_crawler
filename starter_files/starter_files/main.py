@@ -16,7 +16,7 @@ font = pygame.font.Font("starter_files\starter_files/assets/fonts/AtariClassic.t
 clock = pygame.time.Clock()
 
 #define game variables
-level = 3
+level = 1
 screen_scroll = []
 
 #helper function to scale
@@ -34,7 +34,7 @@ coin_list = []
 for i in range(4):
     img = scale(pygame.image.load(f'starter_files\starter_files/assets\images\items\coin_f{i}.png').convert_alpha(), constants.ITEM_SCALE)
     coin_list.append(img)
-#Load potion
+# Load potion
 red_potion = scale(pygame.image.load(f'starter_files\starter_files/assets\images\items\potion_red.png').convert_alpha(), 2)
 # Load items
 item_list = []
@@ -66,6 +66,25 @@ for i in range(constants.TILE_TYPE):
     img = pygame.image.load(f'starter_files\starter_files/assets/images/tiles/{i}.png').convert_alpha()
     tile_img = pygame.transform.scale(img, (constants.TILE_SIZE, constants.TILE_SIZE))
     tile_list.append(tile_img)
+# Load world
+with open(f'starter_files\starter_files\levels\level{level}_data.csv', newline='') as csvfile:
+    map_level = [row for row in csv.reader(csvfile)] 
+
+# Create world
+world = World()
+world.process_data(map_level, tile_list, item_list, mob_animations)
+
+# Character
+player = world.player
+# Weapon
+bow = Weapon(bow_image, arrow_image)
+# Sprite groups
+arrow_group = pygame.sprite.Group()
+damage_text_group = pygame.sprite.Group()
+item_group = pygame.sprite.Group()
+for item in world.item_list:
+    item_group.add(item)
+fireball_group = pygame.sprite.Group()
 
 # Display player hearts
 def draw_info():
@@ -108,37 +127,13 @@ class DamageText(pygame.sprite.Sprite):
         self.counter += 1
         if self.counter > 30:
             self.kill()
-        
-#Weapon
-bow = Weapon(bow_image, arrow_image)
 
-# Load world
-map_level = []
-for i in range(1, 5):
-    with open(f'starter_files\starter_files\levels\level{i}_data.csv', newline='') as csvfile:
-        map_data = [row for row in csv.reader(csvfile)] 
-        map_level.append(map_data)
-
-world = World()
-world.process_data(map_level, tile_list, level, item_list, mob_animations)
-
-# Sprite groups
-arrow_group = pygame.sprite.Group()
-damage_text_group = pygame.sprite.Group()
-item_group = pygame.sprite.Group()
-for item in world.item_list:
-    item_group.add(item)
-fireball_group = pygame.sprite.Group()
-
-#Character
-player = world.player
-
-#Movement boolean
+#------------------------------------------------------------------
+# Movement boolean
 moving_left = False
 moving_right = False
 moving_up = False
 moving_down = False
-
 
 # Game loop
 run = True
@@ -165,7 +160,31 @@ while run:
     # Move player
     screen_scroll = player.move(dx, dy, world.obstacle_tiles)
     
-    #Update all
+    # Check level
+    if world.next_level(player):
+        level += 1
+
+        # Load new CSV
+        with open(f'starter_files/starter_files/levels/level{level}_data.csv', newline='') as csvfile:
+            map_level = [row for row in csv.reader(csvfile)]
+
+        # Clear groups
+        arrow_group.empty()
+        damage_text_group.empty()
+        item_group.empty()
+        fireball_group.empty()
+        
+        # Save from prev rounds
+        temp_health = player.health
+        temp_score = player.score
+        # Rebuild world
+        world = World()
+        world.process_data(map_level, tile_list, item_list, mob_animations)
+        player = world.player
+        player.health = temp_health
+        player.score = temp_score
+
+    # Update all
     world.update(screen_scroll)
     player.update()
     for enemy in world.enemy:
@@ -181,7 +200,6 @@ while run:
             damage_text = DamageText(damage_pos.centerx, damage_pos.y, damage, constants.RED)
             damage_text_group.add(damage_text)
     damage_text_group.update(screen_scroll)
-    
     if fireball:
         fireball_group.add(fireball)
     for fireball in fireball_group:
@@ -203,6 +221,8 @@ while run:
     for fireball in fireball_group:
         fireball.draw(screen)
 
+    # Next level
+    world.next_level(player)
     draw_info()
 
     # Event handler
@@ -230,7 +250,7 @@ while run:
             if event.key in (pygame.K_s, pygame.K_DOWN):
                 moving_down = False
 
-
+    
     pygame.display.update()
 
 pygame.quit()

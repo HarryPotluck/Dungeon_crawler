@@ -2,7 +2,6 @@ from character import Character
 from items import Item
 import constants
 
-
 class World():
     def __init__(self):
         self.map_tiles = []
@@ -12,8 +11,8 @@ class World():
         self.player = None
         self.enemy = []
 
-    def process_data(self, data, tile_list, level: int, item_images, mob_animations):
-        for y, row in enumerate(data[level-1]):
+    def process_data(self, data, tile_list, item_images, mob_animations):
+        for y, row in enumerate(data):
             for x, tile in enumerate(row):
                 tile = int(tile)
                 image = tile_list[tile]
@@ -59,4 +58,8 @@ class World():
     def draw(self, surface):
         for tile in self.map_tiles:
             surface.blit(tile[0], tile[1])
-        
+    
+    def next_level(self, player):
+        if self.level_tile and self.level_tile[1].colliderect(player.rect):
+            return True
+        return False

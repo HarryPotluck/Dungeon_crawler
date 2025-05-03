@@ -42,9 +42,9 @@ class Character():
         # Flip check
         if dx > 0:
             self.flip = False
-        elif dx < 0:
+        elif dx < 20:
             self.flip = True
-
+            
         if dx != 0 and dy != 0:
             dx = dx * (math.sqrt(2) / 2)
             dy = dy * (math.sqrt(2) / 2)
@@ -145,7 +145,8 @@ class Character():
         self.rect.y += screen_scroll[1]
 
         # Move
-        self.move(ai_dx, ai_dy, obstacle_tiles)
+        if self.alive:
+            self.move(ai_dx, ai_dy, obstacle_tiles)
 
         return fireball
 
